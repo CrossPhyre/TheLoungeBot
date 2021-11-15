@@ -44,7 +44,7 @@ class YoutubeAgent:
 
         # used to determine how long (in seconds) the downloader should wait
         # before timing out based on the number of attempts it has made
-        self._dl_timeouts = [10, 10, 30, 90, 600]
+        self._dl_timeouts = [30, 30, 75, 150, 600]
 
         # set up the background thread
         # this background thread reads from the queue _urls_to_load and performs the work

@@ -62,9 +62,12 @@ class YodelService:
         return -1, None
 
 
+    # the background (infinite) loop that controls the playback of the audio
+    # if nothing needs played, it sleeps
     def __player_loop__(self):
         while True:
             if self._voice_client is None or self._queue_index == len(self._queue):
+                # nothing to play or nowhere to play it, take a nap
                 sleep(0.1)
             else:
                 y = self._queue[self._queue_index]
@@ -72,29 +75,39 @@ class YodelService:
                 played = False
 
                 if audio_fp:
+                    # audio successfully loaded; now to play it
                     self._last_tick = datetime.now()
                     self._playtime = 0
                     self._voice_client.play(discord.FFmpegOpusAudio(audio_fp, executable=self._ffmpeg_fp))
 
+                    # loop while audio is playing
+                    # continuously updates playback time and waits for the audio
+                    # to finish playing
                     while self._voice_client and (self._voice_client.is_playing() or self._voice_client.is_paused() or self._halt_playback):
                         sleep(0.1)
 
-                        if self._voice_client.is_playing():
+                        if self._voice_client and self._voice_client.is_playing():
+                            # if the player is playing, record the elapsed time
                             n = datetime.now()
                             self._playtime += (n - self._last_tick).total_seconds()
                             self._last_tick = n
 
                     played = True
 
-                if self._voice_client:
+                if self._voice_client is not None and (played or self._queue_index < len(self._queue) - 1):
                     if y.autoqueue or not played:
+                        # re-add song to end of queue; either the song autoqueues or failed to play
                         y2 = Yodel(self.__get_next_yodel_id__(), y.url, y.title, y.duration, y.autoqueue)
                         self._queue.append(y2)
 
                     if self._queue_index == 2:
+                        # remove the oldest song in the queue; this ensures that the queue
+                        # only shows 2 songs that have already been played
                         self._queue.pop(0)
                     else:
+                        # limit of 2 played songs not yet reached; just increment the index
                         self._queue_index += 1
+
 
 
     def add(self, url, autoqueue):
