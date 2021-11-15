@@ -225,11 +225,11 @@ class YodelService:
 
 
     def move_next(self, yodel_id):
-        return self.move(yodel_id, self._queue_index + 1)
+        return self.move(yodel_id, 1)
 
 
     def move_now(self, yodel_id):
-        success, message = self.move(yodel_id, self._queue_index + 1)
+        success, message = self.move_next(yodel_id)
 
         if success:
             self.next()
