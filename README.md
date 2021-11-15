@@ -1,2 +1,2 @@
 # TheLoungeBot
-A customized bot for Discord to perform various actions.
+A bot for Discord with customized functionality.
