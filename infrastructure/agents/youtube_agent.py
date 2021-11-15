@@ -7,6 +7,7 @@ from time import sleep
 from datetime import datetime, timedelta
 from queue import Queue
 import threading
+import re
 
 class YoutubeAgent:
     # mostly added this in case having this hook is useful for the future
@@ -28,6 +29,9 @@ class YoutubeAgent:
         self._audio_dir = path.join(shared.root_dir, 'shared\\cache\\audio')
         self._pl_info_fp = path.join(shared.root_dir, 'shared\\cache\\temp\\pl_info.exe')
         self._ffmpeg_fp = path.join(shared.root_dir, 'shared\\dependencies\\ffmpeg\\ffmpeg.exe')
+
+        self.video_url_re = re.compile(r'^(?:https?:\/\/)?(?:www\.)?youtube.com\/watch\?(?:v=[a-zA-Z0-9\-_]+)(?:&list=[a-zA-Z0-9\-_]+)?$')
+        self.playlist_url_re = re.compile(r'^(?:https?:\/\/)?(?:www\.)?youtube.com\/watch\?(?:v=[a-zA-Z0-9\-_]+)(?:&list=[a-zA-Z0-9\-_]+)$')
 
         helpers.cleanup_dir(self._audio_dir)
 
@@ -115,9 +119,15 @@ class YoutubeAgent:
             print('Finished YT audio download. Beginning conversion.')
 
 
+    # removes the "list" parameter of the url (sometimes this causes errors)
+    def __clean_video_url__(self, url):
+        return url[:url.index('&list=')] if self.is_valid_playlist_url(url) else url
+
+
     # returns the filepath to the mp3, if available
     # this will wait up to [timeout] seconds for it to finish loading
     def get_yt_audio_fp(self, url, timeout=10):
+        url = self.__clean_video_url__(url)
         timeout = max(timeout, 0)
 
         if url not in self._url_fp_map:
@@ -174,6 +184,8 @@ class YoutubeAgent:
 
     # attempts to download the metadata for the video at a url
     def get_yt_video_meta(self, url):
+        url = self.__clean_video_url__(url)
+
         meta = None
         ydl_opts = {
             'logger': self.YoutubeDLLogger(),
@@ -199,6 +211,16 @@ class YoutubeAgent:
         return meta if success else None
 
 
+    # returns whether the url is a valid video url
+    def is_valid_video_url(self, url):
+        return self.video_url_re.match(url) is not None
+
+
+    # returns whether the url is a valid video url
+    def is_valid_playlist_url(self, url):
+        return self.playlist_url_re.match(url) is not None
+
+
     # initiates loading the video(s)
     def load_yt_audio(self, url):
         if isinstance(url, list):
@@ -207,4 +229,5 @@ class YoutubeAgent:
             urls = [url]
 
         for url in urls:
+            url = self.__clean_video_url__(url)
             self._urls_to_load.put((url, 0))

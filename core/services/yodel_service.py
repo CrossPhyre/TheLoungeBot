@@ -101,39 +101,47 @@ class YodelService:
         success = False
         message = None
 
-        self._youtube_agent.load_yt_audio(url)
-        meta = self._youtube_agent.get_yt_video_meta(url)
+        if self._youtube_agent.is_valid_video_url(url):
+            self._youtube_agent.load_yt_audio(url)
+            meta = self._youtube_agent.get_yt_video_meta(url)
 
-        if not meta:
-            message = 'I don\'t know what happened...I couldn\'t add that song...'
+            if not meta:
+                message = 'I don\'t know what happened...I couldn\'t add that song...'
+            else:
+                y = Yodel(self.__get_next_yodel_id__(), url, meta['title'], meta['duration'], autoqueue)
+                self._queue.append(y)
+
+                success = True
+                message = 'Successfully added "{}" to the queue!'.format(y.title)
         else:
-            y = Yodel(self.__get_next_yodel_id__(), url, meta['title'], meta['duration'], autoqueue)
-            self._queue.append(y)
-
-            success = True
-            message = 'Successfully added "{}" to the queue!'.format(y.title)
+            message = 'Don\'t be mad, but I didn\'t recognize that URL format...'
 
         return success, message
 
 
     def add_playlist(self, url, autoqueue):
+        success = False
         message = None
 
-        videos = self._youtube_agent.get_yt_playlist_meta(url)
+        if self._youtube_agent.is_valid_playlist_url(url):
+            videos = self._youtube_agent.get_yt_playlist_meta(url)
 
-        if not videos:
-            message = 'Soooo...I didn\'t find any videos in that playlist...maybe I had an error? idk...'
+            if not videos:
+                message = 'Soooo...I didn\'t find any videos in that playlist...maybe I had an error? idk...'
+            else:
+                success = True
+                self._youtube_agent.load_yt_audio([video['url'] for video in videos])
+
+                for video in videos:
+                    y = Yodel(self.__get_next_yodel_id__(), video['url'], video['title'], video['duration'], autoqueue)
+
+                    self._queue.append(y)
+
+                message = 'Successfully added {} videos to the queue!'.format(len(videos))
         else:
-            self._youtube_agent.load_yt_audio([video['url'] for video in videos])
+            message = 'Don\'t be mad, but I didn\'t recognize that URL format...'
 
-            for video in videos:
-                y = Yodel(self.__get_next_yodel_id__(), video['url'], video['title'], video['duration'], autoqueue)
-
-                self._queue.append(y)
-
-            message = 'Successfully added {} videos to the queue!'.format(len(videos))
-
-        return True, message
+        return success, message
 
 
     def check_channels(self, text_channel):
