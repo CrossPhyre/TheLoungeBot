@@ -106,9 +106,13 @@ celerybeat.pid
 .venv
 env/
 venv/
+__venv__/
 ENV/
 env.bak/
 venv.bak/
+
+# IDEs
+.vscode/
 
 # Spyder project settings
 .spyderproject
@@ -127,3 +131,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# project directories and files
+shared/cache/
+shared/data/
+shared/dependencies/ffmpeg/ffmpeg.exe
+commands.txt
