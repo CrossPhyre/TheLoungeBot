@@ -135,5 +135,6 @@ dmypy.json
 # project directories and files
 shared/cache/
 shared/data/
+shared/secrets/
 shared/dependencies/ffmpeg/ffmpeg.exe
 commands.txt

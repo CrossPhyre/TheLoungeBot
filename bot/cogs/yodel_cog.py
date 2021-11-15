@@ -72,8 +72,8 @@ class YodelCog(Cog):
         await context.send(message)
 
 
-    @command(name='ydl-initiate', help='(none) Sets the text and voice channels based on the current context.')
-    async def ydl_initiate(self, context):
+    @command(name='ydl-init', help='(none) Sets the text and voice channels based on the current context.')
+    async def ydl_init(self, context):
         success, message = self._yodel_service.set_text_channel(context.channel)
 
         if success:

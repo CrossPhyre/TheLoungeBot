@@ -1,4 +1,6 @@
 from discord.ext.commands import Bot
+
+import shared
 from .cogs import ChatCog, TaskCog, YodelCog
 from core.services import TaskService, YodelService
 from infrastructure.agents import TaskAgent, YoutubeAgent
@@ -28,4 +30,4 @@ class TheLoungeBot:
 
 
     def run(self):
-        self._bot.run('NzcwNjMyMDI2Mzc3NTUxODg0.X5gZAA.EmnJqCislfDwx2wLCYvOwK7T-R8')
+        self._bot.run(shared.secrets.bot_token)
