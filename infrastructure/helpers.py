@@ -3,8 +3,9 @@ from os import remove, listdir, path
 
 
 def cleanup_dir(dir):
-    for f in listdir(dir):
-        remove(path.join(dir, f))
+    if path.exists(dir) and path.isdir(dir):
+        for f in listdir(dir):
+            remove(path.join(dir, f))
 
 
 def hash(s, l=16):
