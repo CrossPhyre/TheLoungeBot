@@ -219,8 +219,8 @@ class YodelCog(Cog):
                 progress_bar_f = '=' * int(progress_percentage)
                 remaining_bar_f = ' ' * (100 - int(progress_percentage))
 
-                progress_bar = '{} [{}{}] {}'.format(progress_f, progress_bar_f, remaining_bar_f, remaining_f)
-                await context.send('```{} [{}]\n{}```'.format(current_yodel.title, duration_f, progress_bar))
+                progress_bar = f'{progress_f} [{progress_bar_f}{remaining_bar_f}] {remaining_f}'
+                await context.send(f'```{current_yodel.title} [{duration_f}]\n{progress_bar}```')
 
             num_pages = math.ceil(len(yodels) / 10) - 1
             page_no = min(max(page_no - 1, 0), num_pages)
@@ -239,6 +239,6 @@ class YodelCog(Cog):
             await context.send(self.__draw_yodel_table__(table_yodels))
 
             if num_pages and yodels:
-                await context.send('```Displaying {} through {} of {} records.\nDisplaying page {} of {}.```'.format(min_i + 1, max_i + 1, len(yodels), page_no + 1, num_pages + 1))
+                await context.send(f'```Displaying {min_i + 1} through {max_i + 1} of {len(yodels)} records.\nDisplaying page {page_no + 1} of {num_pages + 1}.```')
         else:
             await context.send(message)

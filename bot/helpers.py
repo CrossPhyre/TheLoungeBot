@@ -30,14 +30,14 @@ def draw_table(columns, rows):
             cd = '\u253C'
 
             s = '```'
-            s += '{}{}{}\n'.format(tl, td.join([(c['width'] + 2) * hd for c in columns]), tr)
-            s += '{}{}{}\n'.format(vd + ' ', (' ' + vd + ' ').join([c['header-padded'] for c in columns]), ' ' + vd)
-            s += '{}{}{}\n'.format(ld, cd.join([(c['width'] + 2) * hd for c in columns]), rd)
+            s += f'{tl}{td.join([(c["width"] + 2) * hd for c in columns])}{tr}\n'
+            s += f'{vd + " "}{(" " + vd + " ").join([c["header-padded"] for c in columns])}{" " + vd}\n'
+            s += f'{ld}{cd.join([(c["width"] + 2) * hd for c in columns])}{rd}\n'
 
             for r in rows_padded:
-                s += '{}{}{}\n'.format(vd + ' ', (' ' + vd + ' ').join([r[c['attr']] for c in columns]), ' ' + vd)
+                s += f'{vd + " "}{(" " + vd + " ").join([r[c["attr"]] for c in columns])}{" " + vd}\n'
 
-            s += '{}{}{}\n'.format(bl, bd.join([(c['width'] + 2) * hd for c in columns]), br)
+            s += f'{bl}{bd.join([(c["width"] + 2) * hd for c in columns])}{br}\n'
             s += '```'
         else:
             s = 'Unable to represent this data as a table.'
@@ -49,11 +49,11 @@ def draw_table(columns, rows):
 
 def format_timespan(t):
     if t >= 3600:
-        s = '{}h {:>2}m {:>2}s'.format(t // 3600, (t % 3600) // 60, t % 60)
+        s = f'{t // 3600}h {(t % 3600) // 60:>2}m {t % 60:>2}s'
     elif t >= 60:
-        s = '{}m {:>2}s'.format(t // 60, t % 60)
+        s = f'{t // 60}m {t % 60:>2}s'
     else:
-        s = '{}s'.format(t)
+        s = f'{t}s'
 
     return s
 
@@ -64,11 +64,11 @@ def format_user(bot, uid, mention=False):
 
         if u:
             if mention:
-                s = '<@{}>'.format(uid)
+                s = f'<@{uid}>'
             else:
-                s = '`{}`'.format(u)
+                s = f'`{u}`'
         else:
-            s = '<u#{}>'.format(uid)
+            s = f'<u#{uid}>'
     else:
         s = None
 

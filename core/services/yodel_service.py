@@ -18,7 +18,12 @@ class YodelService:
         self._queue_index = 0
         self._playtime = 0
         self._last_tick = None
+
         self._ffmpeg_fp = path.join(shared.root_dir, 'shared\\dependencies\\ffmpeg\\ffmpeg.exe')
+        self._ffmpeg_before_options = '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
+        self._ffmpeg_options = '-vn'
+        # to see why these two sets of options are necessary for playback, see @MrSpaar's answer at
+        # https://stackoverflow.com/questions/61959495/when-playing-audio-the-last-part-is-cut-off-how-can-this-be-fixed-discord-py
 
         self._halt_playback = False
         self._loading_thread = threading.Thread(target=self.__player_loop__, args=())
@@ -71,33 +76,28 @@ class YodelService:
                 sleep(0.1)
             else:
                 y = self._queue[self._queue_index]
-                audio_fp = self._youtube_agent.get_yt_audio_fp(y.url)
-                played = False
 
-                if audio_fp:
-                    # audio successfully loaded; now to play it
-                    self._last_tick = datetime.now()
-                    self._playtime = 0
-                    self._voice_client.play(discord.FFmpegOpusAudio(audio_fp, executable=self._ffmpeg_fp))
+                # begin streaming the audio
+                self._last_tick = datetime.now()
+                self._playtime = 0
+                self._voice_client.play(discord.FFmpegOpusAudio(y.stream_url, executable=self._ffmpeg_fp, before_options=self._ffmpeg_before_options, options=self._ffmpeg_options))
 
-                    # loop while audio is playing
-                    # continuously updates playback time and waits for the audio
-                    # to finish playing
-                    while self._voice_client and (self._voice_client.is_playing() or self._voice_client.is_paused() or self._halt_playback):
-                        sleep(0.1)
+                # loop while audio is playing
+                # continuously updates playback time and waits for the audio
+                # to finish playing
+                while self._voice_client and (self._voice_client.is_playing() or self._voice_client.is_paused() or self._halt_playback):
+                    sleep(0.1)
 
-                        if self._voice_client and self._voice_client.is_playing():
-                            # if the player is playing, record the elapsed time
-                            n = datetime.now()
-                            self._playtime += (n - self._last_tick).total_seconds()
-                            self._last_tick = n
+                    if self._voice_client and self._voice_client.is_playing():
+                        # if the player is playing, record the elapsed time
+                        n = datetime.now()
+                        self._playtime += (n - self._last_tick).total_seconds()
+                        self._last_tick = n
 
-                    played = True
-
-                if self._voice_client is not None and (played or self._queue_index < len(self._queue) - 1):
-                    if y.autoqueue or not played:
+                if self._voice_client is not None and self._queue_index < len(self._queue):
+                    if y.autoqueue:
                         # re-add song to end of queue; either the song autoqueues or failed to play
-                        y2 = Yodel(self.__get_next_yodel_id__(), y.url, y.title, y.duration, y.autoqueue)
+                        y2 = Yodel(self.__get_next_yodel_id__(), y.url, y.stream_url, y.title, y.duration, y.autoqueue)
                         self._queue.append(y2)
 
                     if self._queue_index == 2:
@@ -115,17 +115,16 @@ class YodelService:
         message = None
 
         if self._youtube_agent.is_valid_video_url(url):
-            self._youtube_agent.load_yt_audio(url)
             meta = self._youtube_agent.get_yt_video_meta(url)
 
             if not meta:
                 message = 'I don\'t know what happened...I couldn\'t add that song...'
             else:
-                y = Yodel(self.__get_next_yodel_id__(), url, meta['title'], meta['duration'], autoqueue)
+                y = Yodel(self.__get_next_yodel_id__(), url, meta['stream_url'], meta['title'], meta['duration'], autoqueue)
                 self._queue.append(y)
 
                 success = True
-                message = 'Successfully added "{}" to the queue!'.format(y.title)
+                message = f'Successfully added "{y.title}" to the queue!'
         else:
             message = 'Don\'t be mad, but I didn\'t recognize that URL format...'
 
@@ -143,14 +142,13 @@ class YodelService:
                 message = 'Soooo...I didn\'t find any videos in that playlist...maybe I had an error? idk...'
             else:
                 success = True
-                self._youtube_agent.load_yt_audio([video['url'] for video in videos])
 
                 for video in videos:
-                    y = Yodel(self.__get_next_yodel_id__(), video['url'], video['title'], video['duration'], autoqueue)
+                    y = Yodel(self.__get_next_yodel_id__(), video['url'], video['stream_url'], video['title'], video['duration'], autoqueue)
 
                     self._queue.append(y)
 
-                message = 'Successfully added {} videos to the queue!'.format(len(videos))
+                message = f'Successfully added {len(videos)} videos to the queue!'
         else:
             message = 'Don\'t be mad, but I didn\'t recognize that URL format...'
 
@@ -164,7 +162,7 @@ class YodelService:
         if self._text_channel is None or self._voice_channel is None:
             message = 'I\'m not ready for that command yet! I need you to set me up using the "$ydl-initiate" command.'
         elif self._text_channel.id != text_channel.id:
-            message = 'Actually, Boss, I\'m looking for my commands from the "{}" channel. This is awkward...'.format(self._text_channel.name)
+            message = f'Actually, Boss, I\'m looking for my commands from the "{self._text_channel.name}" channel. This is awkward...'
         else:
             success = True
 
@@ -266,7 +264,7 @@ class YodelService:
         await vc.disconnect()
         self._voice_channel = None
 
-        return True, 'I\'m out! I have disconnected from the "{}" channel and cleared the queue.'.format(channel_name)
+        return True, f'I\'m out! I have disconnected from the "{channel_name}" channel and cleared the queue.'
 
 
     def remove(self, yodel_id):
@@ -297,7 +295,7 @@ class YodelService:
         elif i >= self._queue_index:
             message = 'That item hasn\'t been played yet, Boss.'
         else:
-            y2 = Yodel(self.__get_next_yodel_id__(), y.url, y.title, y.duration, y.autoqueue)
+            y2 = Yodel(self.__get_next_yodel_id__(), y.url, y.stream_url, y.title, y.duration, y.autoqueue)
             self._queue.append(y2)
             message = 'Got it back in the lineup, Boss!'
 
@@ -326,7 +324,7 @@ class YodelService:
 
     def set_text_channel(self, channel):
         self._text_channel = channel
-        return True, 'Your wish is my command! I will now use the "{}" channel for my text IO.'.format(channel.name)
+        return True, f'Your wish is my command! I will now use the "{channel.name}" channel for my text IO.'
 
 
     async def set_voice_channel(self, channel):
@@ -338,7 +336,7 @@ class YodelService:
             self._voice_client = await self._voice_channel.connect()
 
             success = True
-            message = 'I\'m in! I have connected to the "{}" channel.'.format(channel.name)
+            message = f'I\'m in! I have connected to the "{channel.name}" channel.'
 
         return success, message
 
