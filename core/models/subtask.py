@@ -10,9 +10,9 @@ class Subtask:
     def to_dict(self):
         return\
             {
-                'SubtaskId': self.subtask_id,
-                'TaskId': self.task_id,
-                'SeqNo': self.seq_no,
-                'Title': self.title,
-                'Priority': self.priority
+                "SubtaskId": self.subtask_id,
+                "TaskId": self.task_id,
+                "SeqNo": self.seq_no,
+                "Title": self.title,
+                "Priority": self.priority
             }

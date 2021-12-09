@@ -11,10 +11,10 @@ class Yodel:
     def to_dict(self):
         return\
             {
-                'YodelId': self.yodel_id,
-                'URL': self.url,
-                'StreamURL': self.stream_url,
-                'Title': self.title,
-                'Duration': self.duration,
-                'Autoqueue': self.autoqueue
+                "YodelId": self.yodel_id,
+                "URL": self.url,
+                "StreamURL": self.stream_url,
+                "Title": self.title,
+                "Duration": self.duration,
+                "Autoqueue": self.autoqueue
             }

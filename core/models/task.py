@@ -1,9 +1,8 @@
 class Task:
-    def __init__(self, channel_id, seq_no, title, task_id=None, user_id=None, priority=None):
+    def __init__(self, channel_id, description, task_id=None, user_id=None, priority=None):
         self.task_id = task_id
         self.channel_id = channel_id
-        self.seq_no = seq_no
-        self.title = title
+        self.description = description
         self.user_id = user_id
         self.priority = priority
 
@@ -11,10 +10,9 @@ class Task:
     def to_dict(self):
         return\
             {
-                'TaskId': self.task_id,
-                'ChannelId': self.channel_id,
-                'SeqNo': self.seq_no,
-                'Title': self.title,
-                'UserId': self.user_id,
-                'Priority': self.priority
+                "TaskId": self.task_id,
+                "ChannelId": self.channel_id,
+                "Description": self.description,
+                "UserId": self.user_id,
+                "Priority": self.priority
             }

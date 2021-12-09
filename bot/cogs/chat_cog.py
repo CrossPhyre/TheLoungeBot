@@ -5,7 +5,7 @@ class ChatCog(Cog):
         self._bot = bot
 
 
-    @command(name='c-hi', help='(none) Says hello.')
+    @command(name="c-hi", help="(none) Says hello.")
     async def c_say_hello(self, context):
         user = context.author
-        await context.send('Hello, {}!'.format(user.name))
+        await context.send(f"Hello, {user.name}!")

@@ -11,10 +11,10 @@ class Goal:
     def to_dict(self):
         return\
             {
-                'TaskId': self.task_id,
-                'ChannelId': self.channel_id,
-                'SeqNo': self.seq_no,
-                'Title': self.title,
-                'UserId': self.user_id,
-                'Priority': self.priority
+                "TaskId": self.task_id,
+                "ChannelId": self.channel_id,
+                "SeqNo": self.seq_no,
+                "Title": self.title,
+                "UserId": self.user_id,
+                "Priority": self.priority
             }

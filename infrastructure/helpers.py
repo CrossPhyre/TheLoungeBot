@@ -23,8 +23,8 @@ def filter_list(l, filters):
                     val = getattr(o, k)
 
                     if isinstance(v, dict):
-                        filter_type = v['filter_type']
-                        fitler_val = v['filter_val']
+                        filter_type = v["filter_type"]
+                        fitler_val = v["filter_val"]
                     elif isinstance(v, list) or isinstance(v, tuple):
                         if val not in v:
                             match = False

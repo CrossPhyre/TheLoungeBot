@@ -1,13 +1,13 @@
 from discord.ext.commands import Bot
-
 import shared
+from . import helpers
 from .cogs import ChatCog, TaskCog, YodelCog
 from core.services import TaskService, YodelService
 from infrastructure.agents import TaskAgent, YoutubeAgent
 
 class TheLoungeBot:
     def __init__(self):
-        self._bot = Bot(command_prefix='$')
+        self._bot = Bot(command_prefix="$")
         self.__add_cogs__()
         self.__add_events__()
 
@@ -20,13 +20,13 @@ class TheLoungeBot:
 
     def __add_events__(self):
         @self._bot.event
-        async def on_ready():
-            print('Logged in as {0.user}'.format(self._bot))
+        async def on_command_error(context, error):
+            await context.send(f"Beep boop. I did not understand that command. Maybe this error message will help...\n```{error}```")
 
 
         @self._bot.event
-        async def on_command_error(context, error):
-            await context.send('Beep boop. I did not understand that command. Maybe this error message will help...\n```{}```'.format(error))
+        async def on_ready():
+            print(f"Logged in as {self._bot.user}")
 
 
     def run(self):
